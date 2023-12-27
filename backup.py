@@ -1,3 +1,6 @@
+import os
+import re
+import shutil
 from configparser import ConfigParser
 from time import sleep
 
@@ -42,6 +45,18 @@ def download_notion_export(driver):
     download_button.click()
 
 
+def move_notion_export(destination):
+    downloads_folder = os.path.expanduser("~/Downloads")
+    pattern = re.compile(r"[0-9a-f\-]+_Export[0-9a-f\-]+\.zip")
+    for dir_entry in os.scandir(downloads_folder):
+        if pattern.match(dir_entry.name):
+            break
+    else:
+        raise RuntimeError
+
+    shutil.move(dir_entry.path, destination)
+
+
 def main():
     parser = ConfigParser()
     parser.read("config.ini")
@@ -60,6 +75,8 @@ def main():
     download_notion_export(driver)
     driver.close()
     sleep(60 * 5)
+
+    move_notion_export(parser.get("exports", "directory"))
 
 
 if __name__ == "__main__":
