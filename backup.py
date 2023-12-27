@@ -74,24 +74,32 @@ def main():
     options = Options()
     options.binary = FirefoxBinary(parser.get("firefox", "executable"))
     options.profile = FirefoxProfile(parser.get("firefox", "profile"))
+    options.add_argument("--headless")
     driver = webdriver.Firefox(options=options)
 
     # start export
+    print("Accessing notion")
     start_notion_export(driver)
+    print("Started export")
     driver.close()
     sleep(60 * 20)
 
     # download export
+    print("Downloading export")
     driver = webdriver.Firefox(options=options)
     download_notion_export(driver)
+    print("Started download")
     driver.close()
     sleep(60 * 5)
 
-    # move_notion_export(parser.get("exports", "directory"))
+    print("Moving export out of downloads folder")
+    move_notion_export(parser.get("exports", "directory"))
     delete_old_notion_exports(
         parser.get("exports", "directory"),
         parser.getint("exports", "num_to_keep"),
     )
+
+    print("Done.")
 
 
 if __name__ == "__main__":
