@@ -57,6 +57,15 @@ def move_notion_export(destination):
     shutil.move(dir_entry.path, destination)
 
 
+def delete_old_notion_exports(directory, max_backups):
+    # get exports ordered by date
+    files = [d.path for d in os.scandir(directory)]
+    files.sort(key=lambda f: os.path.getmtime(f))
+
+    for file in files[:-max_backups]:
+        os.remove(os.path.join(directory, file))
+
+
 def main():
     parser = ConfigParser()
     parser.read("config.ini")
@@ -67,16 +76,22 @@ def main():
     options.profile = FirefoxProfile(parser.get("firefox", "profile"))
     driver = webdriver.Firefox(options=options)
 
+    # start export
     start_notion_export(driver)
     driver.close()
     sleep(60 * 20)
 
+    # download export
     driver = webdriver.Firefox(options=options)
     download_notion_export(driver)
     driver.close()
     sleep(60 * 5)
 
-    move_notion_export(parser.get("exports", "directory"))
+    # move_notion_export(parser.get("exports", "directory"))
+    delete_old_notion_exports(
+        parser.get("exports", "directory"),
+        parser.getint("exports", "num_to_keep"),
+    )
 
 
 if __name__ == "__main__":
