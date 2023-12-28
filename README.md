@@ -1,6 +1,13 @@
 # Notion Backup
 
-This script will click the "export all workspace content" button in notion.
+This script will back up Notion regularly.
+
+It works in two phases:
+1. Click the "export all workspace content button".
+2. Click the download button on the notification in Notion when it is done. Then move 
+the export to the correct directory, and click the archive button on the notification.
+
+The current phase is saved to state.json, so the script can resume the phase if it fails.
 
 # Setup
 
