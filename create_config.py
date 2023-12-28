@@ -14,6 +14,9 @@ def main():
     parser.set("exports", "directory", "")
     parser.set("exports", "num_to_keep", "5")
 
+    parser.add_section("backups")
+    parser.set("backups", "backup_interval", "3")
+
     with open("config.ini", "w") as f:
         parser.write(f)
 

@@ -107,7 +107,9 @@ def main():
     next_backup = datetime.datetime.fromtimestamp(data["next_backup"])
     state = data["state"]
 
-    backup_interval = datetime.timedelta(days=3)
+    backup_interval = datetime.timedelta(
+        days=parser.getint("backups", "backup_interval")
+    )
 
     if datetime.datetime.now() < next_backup:
         print("Not time for backup yet.")
