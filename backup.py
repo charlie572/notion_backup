@@ -50,8 +50,9 @@ def download_notion_export(driver):
     )
 
     if len(notification_divs) == 0:
-        return False
+        return []
 
+    archive_buttons = []
     for notification_div in notification_divs:
         # find buttons
         download_button = notification_div.find_element(
@@ -63,11 +64,10 @@ def download_notion_export(driver):
             value="archive",
         )
 
-        # download and archive
         download_button.click()
-        archive_button.click()
+        archive_buttons.append(archive_button)
 
-    return True
+    return archive_buttons
 
 
 def move_notion_export(destination):
@@ -82,7 +82,11 @@ def move_notion_export(destination):
         if zipfile.ZipFile(dir_entry.path).testzip() is not None:
             continue
 
-        shutil.move(dir_entry.path, destination)
+        if os.path.exists(os.path.join(destination, dir_entry.name)):
+            os.remove(dir_entry.path)
+        else:
+            shutil.move(dir_entry.path, destination)
+
         success = True
 
     return success
@@ -138,16 +142,20 @@ def main():
     # download export
     print("Accessing Notion")
     driver = webdriver.Firefox(options=options)
-    success = download_notion_export(driver)
-    if not success:
+    archive_buttons = download_notion_export(driver)
+    if len(archive_buttons) == 0:
         return
     print("Downloading")
 
-    # move export
+    # wait for download to finish, then move to backups folder
     moved = False
     while not moved:
         sleep(5)
         moved = move_notion_export(parser.get("exports", "directory"))
+
+    # archive download notification
+    for button in archive_buttons:
+        button.click()
 
     # delete old data
     print("Deleting old data")
