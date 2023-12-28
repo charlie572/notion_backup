@@ -1,7 +1,10 @@
+import json
 import os
 import re
 import shutil
+import zipfile
 from configparser import ConfigParser
+import datetime
 from time import sleep
 
 from selenium import webdriver
@@ -40,21 +43,49 @@ def download_notion_export(driver):
     updates_icon = driver.find_element(by=By.CLASS_NAME, value="sidebarUpdates")
     updates_icon.click()
 
-    # click download button
-    download_button = driver.find_element(by=By.XPATH, value="//*[text()='Download']")
-    download_button.click()
+    # find download notifications
+    notification_divs = driver.find_elements(
+        by=By.XPATH,
+        value="//article[./div/div/div/div[text()='Download']]",
+    )
+
+    if len(notification_divs) == 0:
+        return False
+
+    for notification_div in notification_divs:
+        # find buttons
+        download_button = notification_div.find_element(
+            by=By.XPATH,
+            value="//div[text()='Download']",
+        )
+        archive_button = notification_div.find_element(
+            by=By.CLASS_NAME,
+            value="archive",
+        )
+
+        # download and archive
+        download_button.click()
+        archive_button.click()
+
+    return True
 
 
 def move_notion_export(destination):
     downloads_folder = os.path.expanduser("~/Downloads")
-    pattern = re.compile(r"[0-9a-f\-]+_Export[0-9a-f\-]+\.zip")
+    pattern = re.compile(r"[0-9a-f\-]+_Export[0-9a-f\-\(\)]+\.zip")
+    success = False
     for dir_entry in os.scandir(downloads_folder):
-        if pattern.match(dir_entry.name):
-            break
-    else:
-        raise RuntimeError
+        if not pattern.match(dir_entry.name):
+            continue
+        if not zipfile.is_zipfile(dir_entry.path):
+            continue
+        if zipfile.ZipFile(dir_entry.path).testzip() is not None:
+            continue
 
-    shutil.move(dir_entry.path, destination)
+        shutil.move(dir_entry.path, destination)
+        success = True
+
+    return success
 
 
 def delete_old_notion_exports(directory, max_backups):
@@ -70,34 +101,64 @@ def main():
     parser = ConfigParser()
     parser.read("config.ini")
 
+    with open("state.json", "r") as f:
+        data = json.load(f)
+
+    next_backup = datetime.datetime.fromtimestamp(data["next_backup"])
+    state = data["state"]
+
+    backup_interval = datetime.timedelta(days=3)
+
+    if datetime.datetime.now() < next_backup:
+        print("Not time for backup yet.")
+        return
+
     # instantiate driver
     options = Options()
     options.binary = FirefoxBinary(parser.get("firefox", "executable"))
     options.profile = FirefoxProfile(parser.get("firefox", "profile"))
     options.add_argument("--headless")
-    driver = webdriver.Firefox(options=options)
 
-    # start export
-    print("Accessing notion")
-    start_notion_export(driver)
-    print("Started export")
-    driver.close()
-    sleep(60 * 20)
+    if state == "idle":
+        # start export
+        print("Accessing notion")
+        driver = webdriver.Firefox(options=options)
+        start_notion_export(driver)
+        print("Started export")
+
+        # update state
+        data["state"] = "exporting"
+        with open("state.json", "w") as f:
+            json.dump(data, f)
+
+        return
 
     # download export
-    print("Downloading export")
+    print("Accessing Notion")
     driver = webdriver.Firefox(options=options)
-    download_notion_export(driver)
-    print("Started download")
-    driver.close()
-    sleep(60 * 5)
+    success = download_notion_export(driver)
+    if not success:
+        return
+    print("Downloading")
 
-    print("Moving export out of downloads folder")
-    move_notion_export(parser.get("exports", "directory"))
+    # move export
+    moved = False
+    while not moved:
+        sleep(5)
+        moved = move_notion_export(parser.get("exports", "directory"))
+
+    # delete old data
+    print("Deleting old data")
     delete_old_notion_exports(
         parser.get("exports", "directory"),
         parser.getint("exports", "num_to_keep"),
     )
+
+    # update state
+    data["state"] = "idle"
+    data["next_backup"] = (datetime.datetime.now() + backup_interval).timestamp()
+    with open("state.json", "w") as f:
+        json.dump(data, f)
 
     print("Done.")
 
