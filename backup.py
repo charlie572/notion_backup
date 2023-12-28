@@ -102,10 +102,14 @@ def delete_old_notion_exports(directory, max_backups):
 
 
 def main():
-    parser = ConfigParser()
-    parser.read("config.ini")
+    root = os.path.dirname(__file__)
+    config_path = os.path.join(root, "config.ini")
+    state_path = os.path.join(root, "state.json")
 
-    with open("state.json", "r") as f:
+    parser = ConfigParser()
+    parser.read(config_path)
+
+    with open(state_path, "r") as f:
         data = json.load(f)
 
     next_backup = datetime.datetime.fromtimestamp(data["next_backup"])
