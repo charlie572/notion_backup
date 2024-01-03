@@ -138,7 +138,7 @@ def main():
 
         # update state
         data["state"] = "exporting"
-        with open("state.json", "w") as f:
+        with open(state_path, "w") as f:
             json.dump(data, f)
 
         return
@@ -171,7 +171,7 @@ def main():
     # update state
     data["state"] = "idle"
     data["next_backup"] = (datetime.datetime.now() + backup_interval).timestamp()
-    with open("state.json", "w") as f:
+    with open(state_path, "w") as f:
         json.dump(data, f)
 
     print("Done.")
