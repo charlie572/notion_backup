@@ -12,6 +12,8 @@ The current phase is saved to state.json, so the script can resume the phase if 
 
 # Setup
 
+You may need to download firefox from the website rather than using snap.
+
 1. Clone repository.
 2. Create virtual environment.
 3. Install requirements.
