@@ -7,7 +7,6 @@ def main():
     parser = ConfigParser()
 
     parser.add_section("firefox")
-    parser.set("firefox", "executable", "")
     parser.set("firefox", "profile", "")
 
     parser.add_section("exports")

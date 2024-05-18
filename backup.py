@@ -125,7 +125,6 @@ def main():
 
     # instantiate driver
     options = Options()
-    options.binary = FirefoxBinary(parser.get("firefox", "executable"))
     options.profile = FirefoxProfile(parser.get("firefox", "profile"))
     options.add_argument("--headless")
 
@@ -133,6 +132,7 @@ def main():
         # start export
         print("Accessing notion")
         driver = webdriver.Firefox(options=options)
+        print("Created driver")
         start_notion_export(driver)
         print("Started export")
 
