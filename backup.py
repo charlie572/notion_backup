@@ -40,7 +40,7 @@ def download_notion_export(driver):
     driver.implicitly_wait(10.0)
 
     # open updates sidebar
-    updates_icon = driver.find_element(by=By.CLASS_NAME, value="sidebarUpdates")
+    updates_icon = driver.find_element(by=By.CLASS_NAME, value="newSidebarInbox")
     updates_icon.click()
 
     # find download notifications
