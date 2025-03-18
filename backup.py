@@ -10,7 +10,6 @@ from time import sleep
 from selenium import webdriver
 from selenium.webdriver import FirefoxProfile
 from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.firefox.options import Options
 
 
@@ -20,11 +19,13 @@ def start_notion_export(driver):
 
     driver.implicitly_wait(10.0)
 
-    # open settings
-    settings_icon = driver.find_element(by=By.CLASS_NAME, value="sidebarSettings")
-    settings_icon.click()
+    # open general settings
+    sidebar_button = driver.find_element(by=By.CLASS_NAME, value="notion-sidebar-switcher")
+    sidebar_button.click()
     workspace_settings_icon = driver.find_element(by=By.CLASS_NAME, value="settings")
     workspace_settings_icon.click()
+    general_settings = driver.find_element(by=By.ID, value="settings-tab-settings")
+    general_settings.click()
 
     # click export button
     export_button = driver.find_element(by=By.XPATH, value="//*[text()='Export all workspace content']")
