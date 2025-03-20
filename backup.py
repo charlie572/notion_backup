@@ -1,10 +1,10 @@
+import datetime
 import json
 import os
 import re
 import shutil
 import zipfile
 from configparser import ConfigParser
-import datetime
 from time import sleep
 
 from selenium import webdriver
@@ -103,6 +103,7 @@ def delete_old_notion_exports(directory, max_backups):
 
 
 def main():
+    # check if is it time for a backup
     root = os.path.dirname(__file__)
     config_path = os.path.join(root, "config.ini")
     state_path = os.path.join(root, "state.json")
@@ -110,8 +111,11 @@ def main():
     parser = ConfigParser()
     parser.read(config_path)
 
-    with open(state_path, "r") as f:
-        data = json.load(f)
+    if os.path.exists(state_path):
+        with open(state_path, "r") as f:
+            data = json.load(f)
+    else:
+        data = {"next_backup": 0.0, "state": "idle"}
 
     next_backup = datetime.datetime.fromtimestamp(data["next_backup"])
     state = data["state"]
@@ -124,7 +128,7 @@ def main():
         print("Not time for backup yet.")
         return
 
-    # instantiate driver
+    # driver options
     options = Options()
     options.profile = FirefoxProfile(parser.get("firefox", "profile"))
     options.add_argument("--headless")
