@@ -3,6 +3,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import zipfile
 from configparser import ConfigParser
 from time import sleep
@@ -149,6 +150,8 @@ def main():
         with open(state_path, "w") as f:
             json.dump(data, f)
 
+        subprocess.run(["notify-send", '"Notion Backup"', '"Started backup. Will download later."'])
+
         return
 
     # download export
@@ -156,8 +159,11 @@ def main():
     driver = webdriver.Firefox(service=service, options=options)
     archive_buttons = download_notion_export(driver)
     if len(archive_buttons) == 0:
+        subprocess.run(["notify-send", '"Notion Backup"', '"Backup not ready yet. Will download later."'])
         return
     print("Downloading")
+
+    subprocess.run(["notify-send", '"Notion Backup"', '"Downloading backup."'])
 
     # wait for download to finish, then move to backups folder
     moved = False
@@ -182,7 +188,7 @@ def main():
     with open(state_path, "w") as f:
         json.dump(data, f)
 
-    print("Done.")
+    subprocess.run(["notify-send", '"Notion Backup"', '"Finished."'])
 
 
 if __name__ == "__main__":
