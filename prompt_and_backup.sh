@@ -4,16 +4,15 @@
 confirm="$(dunstify "Notion Backup" "Run backup script?" -A yes,yes -A no,no)"
 
 if [[ "$confirm" == "yes" ]] then
-    # get new auth token
-    echo "starting backup"
+    # run backup script
     source /home/charlie/git_repos/notion_backup/venv/bin/activate
     python /home/charlie/git_repos/notion_backup/backup.py
     deactivate
 
-    echo "will download later"
+    notify-send "Notion Backup" "Running backup script."
     echo '/bin/bash /home/charlie/git_repos/notion_backup/prompt_and_backup.sh' | at now + 5 minute
 else
     # schedule script to run later
-    echo "will remind you later"
+    notify-send "Notion Backup" "Will remind you later."
     echo '/bin/bash /home/charlie/git_repos/notion_backup/prompt_and_backup.sh' | at now + 1 hour
 fi
