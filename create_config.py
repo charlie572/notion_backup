@@ -7,10 +7,11 @@ def main():
     parser = ConfigParser()
 
     parser.add_section("firefox")
-    parser.set("firefox", "profile", "")
+    parser.set("firefox", "profile", "/home/charlie/.mozilla/firefox/k8zmz994.Scripts")
+    parser.set("firefox", "binary", "/snap/firefox/current/usr/lib/firefox/firefox")
 
     parser.add_section("exports")
-    parser.set("exports", "directory", "")
+    parser.set("exports", "directory", "/home/charlie/notion_backups")
     parser.set("exports", "num_to_keep", "5")
 
     parser.add_section("backups")
