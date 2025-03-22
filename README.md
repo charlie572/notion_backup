@@ -17,7 +17,8 @@ You may need to download firefox from the website rather than using snap.
 1. Clone repository.
 2. Create virtual environment.
 3. Install requirements.
+4. Download the [firefox geckodriver](https://github.com/mozilla/geckodriver/releases), and put it in this directory.
 5. Create a new firefox profile by opening about:profiles in firefox, and sign in to Notion using it.
 6. Copy the root directory of the profile on about:profiles. 
 7. Create a config file using create_config.py, then fill in the settings in the file.
-8. Run backup.py regularly.
+8. Run prompt_and_backup.sh once a week.
