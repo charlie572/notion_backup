@@ -11,6 +11,7 @@ from selenium import webdriver
 from selenium.webdriver import FirefoxProfile
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 
 
 def start_notion_export(driver):
@@ -130,13 +131,15 @@ def main():
 
     # driver options
     options = Options()
+    options.binary_location = parser.get("firefox", "binary")
     options.profile = FirefoxProfile(parser.get("firefox", "profile"))
     options.add_argument("--headless")
+    service = Service(os.path.join(os.path.dirname(__file__), "geckodriver"))
 
     if state == "idle":
         # start export
         print("Accessing notion")
-        driver = webdriver.Firefox(options=options)
+        driver = webdriver.Firefox(service=service, options=options)
         print("Created driver")
         start_notion_export(driver)
         print("Started export")
@@ -150,7 +153,7 @@ def main():
 
     # download export
     print("Accessing Notion")
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Firefox(service=service, options=options)
     archive_buttons = download_notion_export(driver)
     if len(archive_buttons) == 0:
         return
